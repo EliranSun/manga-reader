@@ -6,12 +6,16 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
+    "pm2": "^4.4.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3"
   },
   "scripts": {
+    "server": "pm2 start server.js --watch --time && pm2 logs --time",
+    "stop-server": "pm2 stop server.js",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
