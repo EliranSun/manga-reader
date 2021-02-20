@@ -7,6 +7,7 @@ class App extends React.Component {
     const { mangaChapterNumber } = this.getUrlMangaData();
 
     this.state = {
+      isLoading: true,
       mangaChaptersData: [],
       pageIndex: 0,
       mangaChapterNumber: mangaChapterNumber || '0001',
@@ -34,9 +35,7 @@ class App extends React.Component {
   isMangaChapterCoverDouble = () => {
     // TODO: this method is called multiple times
     const { mangaChaptersData, mangaChapterNumber } = this.state;
-    console.log({ mangaChaptersData });
     if (mangaChaptersData[mangaChapterNumber]) {
-      console.log({ double: mangaChaptersData[mangaChapterNumber].isCoverPageDouble })
       return mangaChaptersData[mangaChapterNumber].isCoverPageDouble;
     }
 
@@ -80,14 +79,15 @@ class App extends React.Component {
   setMangaPages = pageIndexOperator => {
     let nextState = null;
     const { mangaChapterNumber, mangaChaptersData, pageIndex } = this.state;
+    const chapterData = mangaChaptersData[mangaChapterNumber];
 
     if (pageIndexOperator > 0) { // next pages
       if (pageIndex === 0) {
         nextState = {
           pageIndex: this.isMangaChapterCoverDouble() ? 2 : 1
         };
-      } else if (pageIndex + pageIndexOperator >= mangaChaptersData[mangaChapterNumber].numberOfPages) {
-        const nextMangaChapter = this.getChapterNumberString(mangaChaptersData[mangaChapterNumber].number + 1);
+      } else if (pageIndex + pageIndexOperator >= chapterData.numberOfPages) {
+        const nextMangaChapter = this.getChapterNumberString(chapterData.number + 1);
         if (!mangaChaptersData[nextMangaChapter]) {
           return;
         }
@@ -95,6 +95,10 @@ class App extends React.Component {
         nextState = {
           mangaChapterNumber: nextMangaChapter,
           pageIndex: 0
+        };
+      } else if (chapterData.fileNames[pageIndex].isPageDouble) {
+        nextState = {
+          pageIndex: pageIndex + 1
         };
       } else {
         nextState = {
@@ -162,12 +166,17 @@ class App extends React.Component {
     }
 
     this.setState({
+      isLoading: false,
       mangaChaptersData: result.body
     });
   };
 
   render() {
-    const { mangaChaptersData, mangaChapterNumber, pageIndex } = this.state;
+    const { mangaChaptersData, mangaChapterNumber, pageIndex, isLoading } = this.state;
+
+    if (isLoading) {
+      return <h1>Loading shit-ton of pages...</h1>;
+    }
 
     if (!mangaChaptersData[mangaChapterNumber]) {
       return <h1>No chapter found! You've reached the end of One Piece!?</h1>;
@@ -180,6 +189,13 @@ class App extends React.Component {
       chapters: Object.keys(mangaChaptersData).length 
     };
 
+    const chapterData = mangaChaptersData[mangaChapterNumber];
+    console.log(chapterData.fileNames[pageIndex]);
+    const shouldRenderSecondPage = 
+      chapterData.fileNames[pageIndex + 1] &&
+      !chapterData.fileNames[pageIndex].isPageDouble &&
+      (this.isMangaChapterCoverDouble() || pageIndex > 0);
+
     return (
       <>
       <div className="data">
@@ -190,12 +206,12 @@ class App extends React.Component {
         <img
           alt="manga-page"
           className="manga-page"
-          src={ `${this.mangaApi}/${mangaChaptersData[mangaChapterNumber].fileNames[pageIndex]}` } />
-        { (this.isMangaChapterCoverDouble() || pageIndex > 0) &&
+          src={ `${this.mangaApi}/${chapterData.fileNames[pageIndex].fileName}` } />
+        { shouldRenderSecondPage &&
           <img
             alt="manga-page"
             className="manga-page"
-            src={ `${this.mangaApi}/${mangaChaptersData[mangaChapterNumber].fileNames[pageIndex + 1]}` } /> }
+            src={ `${this.mangaApi}/${chapterData.fileNames[pageIndex + 1].fileName}` } /> }
       </div>
       </>
     );

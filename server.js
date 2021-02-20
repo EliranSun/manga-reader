@@ -1,6 +1,7 @@
 const fs = require('fs');
 const cors = require('cors');
 const express = require('express');
+var sizeOf = require('image-size');
 
 const app = express();
 
@@ -34,23 +35,29 @@ app.get(API.GET_ALL_PAGES_NAMES, (request, response) => {
         const mangaChaptersFiles = Object
           .keys(mangaChapters)
           .filter(chapterNumber => chapterNumber === mangaChapterNumber);
+        const dimensions = sizeOf(`./public/pages/${fileName}`);
 
         if (mangaChaptersFiles.length > 0) {
           mangaChapters[mangaChapterNumber] = {
             ...mangaChapters[mangaChapterNumber],
-            fileNames: mangaChapters[mangaChapterNumber].fileNames.concat(fileName),
+            fileNames: mangaChapters[mangaChapterNumber].fileNames.concat({
+              fileName,
+              isPageDouble: dimensions.width > dimensions.height
+            }),
             numberOfPages: mangaChapters[mangaChapterNumber].numberOfPages + 1
           }
-          continue;
+        } else {
+          const chapterNumber = parseInt(mangaChapterNumber, 10);
+          mangaChapters[mangaChapterNumber] = {
+            isCoverPageDouble: [1].includes(chapterNumber),
+            number: chapterNumber,
+            numberOfPages: 1,
+            fileNames: [{ 
+              fileName,
+              isPageDouble: dimensions.width > dimensions.height
+            }]
+          };
         }
-
-        const chapterNumber = parseInt(mangaChapterNumber, 10);
-        mangaChapters[mangaChapterNumber] = {
-          isCoverPageDouble: chapterNumber === 1,
-          number: chapterNumber,
-          numberOfPages: 1,
-          fileNames: [fileName]
-        };
       }
 
       response.send({

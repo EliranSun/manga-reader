@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^7.2.1",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "image-size": "^0.9.3",
     "pm2": "^4.4.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
