@@ -14,3 +14,14 @@ html {
 .manga-page {
   max-height: 100vh;
 }
+
+.data {
+  position: fixed;
+  font-family: 'Courier New', Courier, monospace;
+  bottom: 0;
+  font-size: 0.8em;
+}
+
+.data p {
+  margin: 0;
+}

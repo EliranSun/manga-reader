@@ -26,7 +26,13 @@ class App extends React.Component {
     this.setUrlMangaData();
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    console.log('props update', this.props, prevProps);
+    console.log('state update', this.state, prevState);
+  }
+
   isMangaChapterCoverDouble = () => {
+    // TODO: this method is called multiple times
     const { mangaChaptersData, mangaChapterNumber } = this.state;
     console.log({ mangaChaptersData });
     if (mangaChaptersData[mangaChapterNumber]) {
@@ -52,7 +58,7 @@ class App extends React.Component {
 
     return {
       mangaChapterNumber: urlParts[0],
-      pageIndex: parseInt(urlParts[1].split('-')[0]) - 1,
+      pageIndex: parseInt(urlParts[1] && urlParts[1].split('-')[0]) - 1,
     };
   }
 
@@ -139,6 +145,7 @@ class App extends React.Component {
 
   listenForKeyboardInput = () => {
     window.addEventListener('keypress', event => {
+      console.log(event.key);
       if (this.nextPagesKeys.includes(event.key)) this.setMangaPages(2);
       if (this.previousPagesKeys.includes(event.key)) this.setMangaPages(-2);
       if (this.nextChapterKeys.includes(event.key)) this.setMangaChapter(1);
@@ -161,11 +168,24 @@ class App extends React.Component {
 
   render() {
     const { mangaChaptersData, mangaChapterNumber, pageIndex } = this.state;
+
     if (!mangaChaptersData[mangaChapterNumber]) {
       return <h1>No chapter found! You've reached the end of One Piece!?</h1>;
     }
 
+    const data = { 
+      page: pageIndex + 1,
+      pagesInChapter:  mangaChaptersData[mangaChapterNumber].numberOfPages,
+      chapter: parseInt(mangaChapterNumber), 
+      chapters: Object.keys(mangaChaptersData).length 
+    };
+
     return (
+      <>
+      <div className="data">
+        <p>{ data.page }/{ data.pagesInChapter }</p>
+        <p>{ data.chapter }/{ data.chapters }</p>
+      </div>
       <div className="manga-book">
         <img
           alt="manga-page"
@@ -177,6 +197,7 @@ class App extends React.Component {
             className="manga-page"
             src={ `${this.mangaApi}/${mangaChaptersData[mangaChapterNumber].fileNames[pageIndex + 1]}` } /> }
       </div>
+      </>
     );
   }
 }
